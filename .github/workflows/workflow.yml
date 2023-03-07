@@ -1,0 +1,84 @@
+name: Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  release:
+    types:
+      - created
+
+env:
+  GITHUB: ${{ toJson(github) }}
+  NODE_VERSION: '16'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    steps:
+    - id: setup-node
+      name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - id: checkout
+      name: Checkout
+      uses: actions/checkout@v2
+
+    - id: sanity-check
+      name: Sanity check
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+        JOB_CONTEXT: ${{ toJson(job) }}
+        STEPS_CONTEXT: ${{ toJson(steps) }}
+        RUNNER_CONTEXT: ${{ toJson(runner) }}
+        STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+        MATRIX_CONTEXT: ${{ toJson(matrix) }}
+      run: |
+        printenv
+        echo "$PATH"
+        echo "$GITHUB_CONTEXT"
+        echo "$JOB_CONTEXT"
+        echo "$STEPS_CONTEXT"
+        echo "$RUNNER_CONTEXT"
+        echo "$STRATEGY_CONTEXT"
+        echo "$MATRIX_CONTEXT"
+        which node
+        node --version
+        which npm
+        npm --version
+        which grunt
+        grunt --version
+        which make
+        make --version
+        which jq
+        jq --version
+        pwd
+        ls -lah .
+
+    - id: cache-dependencies
+      name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          **/node_modules
+          **/.cache
+        key: node-modules-${{ secrets.CACHE_VERSION }}-${{ hashFiles('package.json') }}
+
+    - id: install-dependencies
+      name: Install dependencies
+      if: |
+        (steps.cache-dependencies.outputs.cache-hit != 'true')
+      run: |
+        npm install --verbose
