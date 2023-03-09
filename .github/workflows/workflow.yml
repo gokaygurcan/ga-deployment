@@ -187,7 +187,8 @@ jobs:
       name: Version
       run: |
         version=$(git tag --list --sort v:refname --merged | tail -1)
-        echo ::set-output name=VERSION::$version
+        # echo ::set-output name=VERSION::$version
+        echo "{VERSION}={$version}" >> $GITHUB_OUTPUT
 
     - id: push-tag
       name: Push tag
