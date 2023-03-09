@@ -5,6 +5,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
+    "dockerize": "docker run -it --rm -u node -w /home/node/`pwd | awk -F/ '{print $NF}'` -v ~/.ssh/:/home/node/.ssh -v `pwd`:/home/node/`pwd | awk -F/ '{print $NF}'` node:gallium /bin/bash",
     "dev": "echo \"npm script: dev\"",
     "build": "echo \"npm script: build\"",
     "start": "echo \"npm script: start\"",
