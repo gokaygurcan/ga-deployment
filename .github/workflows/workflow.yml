@@ -183,19 +183,22 @@ jobs:
         git config --global user.name "${GITHUB_ACTOR}"
         git config --list
 
-    - id: new-tag
-      name: New tag
+    - id: new-tag-1
+      name: New tag 1
       run: |
         LAST_TAG=$(git tag --list --sort v:refname --merged | tail -1)
         echo $LAST_TAG
+
+    - id: new-tag-2
+      name: New tag 2
+      run: |
         NEW_TAG=$(npx semver $LAST_TAG --increment patch)
         echo $NEW_TAG
-        echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
 
-    - id: push-tag
-      name: Push tag
-      env:
-        TAG: ${{ steps.new-tag.outputs.tag }}
-      run: |
-        git tag -a $TAG -m "tag: $TAG"
-        git push origin $TAG
+#    - id: push-tag
+#      name: Push tag
+#      env:
+#        TAG: ${{ steps.new-tag.outputs.tag }}
+#      run: |
+#        git tag -a $TAG -m "tag: $TAG"
+#        git push origin $TAG
