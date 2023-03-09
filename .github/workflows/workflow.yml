@@ -162,6 +162,9 @@ jobs:
     - id: checkout
       name: Checkout
       uses: actions/checkout@v3
+      with:
+        ref: ${{ github.head_ref }}
+        fetch-depth: 0
 
     - id: cache-dependencies
       name: Cache dependencies
@@ -179,37 +182,19 @@ jobs:
         git config --global user.name "GitHub Actions"
         git config --list
 
-    - id: bump
-      name: Bump
-      uses: actions/github-script@v6
-      with:
-        github-token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
-        debug: true
-        result-encoding: string
-        script: |
-          const semver = require('semver');
-          
-          const owner = context.payload.repository.owner.login;
-          const repo = context.payload.repository.name;
-          
-          const tags = await github.repos.listTags({ owner, repo, per_page: 1, page: 1 }).catch(console.log);
-          const releases = await github.repos.listReleases({ owner, repo, per_page: 1, page: 1 }).catch(console.log);
-          
-          const lastTag = tags.data[0].name;
-          const lastRelease = releases.data[0].tag_name;
-          const lastVersion = lastTag.split('.').slice(0, -1).join('.');
-          
-          const version = `${(lastTag === lastRelease) ? 'v' + semver.inc(lastVersion, 'patch') : lastVersion}.${context.runNumber}`;
-
-          core.info(`version: ${version}`);
-          core.setOutput('version', version);
-          
-          return version;
+    - id: git-version
+      name: Git version
+      uses: codacy/git-version@master
+      
+    - id: print-version
+      name: Print version
+      run: |
+        echo ${{ steps.version.outputs.version }}
 
     - id: push-tag
       name: Push tag
       env:
-        VERSION: ${{ steps.bump.outputs.version }}
+        VERSION: ${{ steps.version.outputs.version }}
       run: |
         echo "$VERSION"
         
