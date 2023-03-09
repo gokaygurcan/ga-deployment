@@ -183,18 +183,19 @@ jobs:
         git config --global user.name "${GITHUB_ACTOR}"
         git config --list
 
-    - id: version
-      name: Version
+    - id: new-tag
+      name: New tag
       run: |
-        CURRENT_VERSION=$(git tag --list --sort v:refname --merged | tail -1)
-        VERSION=$(npx semver $CURRENT_VERSION --increment patch)
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        LAST_TAG=$(git tag --list --sort v:refname --merged | tail -1)
+        echo $LAST_TAG
+        NEW_TAG=$(npx semver $LAST_TAG --increment patch)
+        echo $NEW_TAG
+        echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
 
     - id: push-tag
       name: Push tag
       env:
-        VERSION: ${{ steps.version.outputs.version }}
-      run: |        
-        # push new tag
-        git tag -a $VERSION -m "$VERSION"
-        git push origin $VERSION
+        TAG: ${{ steps.new-tag.outputs.tag }}
+      run: |
+        git tag -a $TAG -m "tag: $TAG"
+        git push origin $TAG
