@@ -16,7 +16,7 @@ on:
 
 env:
   GITHUB: ${{ toJson(github) }}
-  NODE_VERSION: '16'
+  NODE_VERSION: 16
 
 defaults:
   run:
@@ -88,7 +88,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     if: |
-      (github.event_name == 'pull_request')
+      (github.event_name == 'pull_request' && github.event.pull_request.merged != true)
     needs: [ setup ]
     steps:
     - id: setup-node
@@ -119,7 +119,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     if: |
-      (github.event_name == 'pull_request')
+      (github.event_name == 'pull_request' && github.event.pull_request.merged != true)
     needs: [ lint ]
     steps:
     - id: setup-node
@@ -162,9 +162,6 @@ jobs:
     - id: checkout
       name: Checkout
       uses: actions/checkout@v3
-      with:
-        ref: ${{ github.head_ref }}
-        fetch-depth: 0
 
     - id: cache-dependencies
       name: Cache dependencies
@@ -182,14 +179,14 @@ jobs:
         git config --global user.name "GitHub Actions"
         git config --list
 
-    - id: git-version
-      name: Git version
-      uses: codacy/git-version@master
-      
-    - id: print-version
-      name: Print version
-      run: |
-        echo ${{ steps.version.outputs.version }}
+    - id: release-action
+      name: Release action
+      uses: K-Phoen/semver-release-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+      with:
+        release_branch: master
+        release_strategy: tag
 
     - id: push-tag
       name: Push tag
@@ -201,4 +198,3 @@ jobs:
         # push new tag
         git tag -a $VERSION -m "$VERSION"
         git push origin $VERSION
-  
