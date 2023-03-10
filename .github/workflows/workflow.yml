@@ -58,6 +58,8 @@ jobs:
         echo "$RUNNER_CONTEXT"
         echo "$STRATEGY_CONTEXT"
         echo "$MATRIX_CONTEXT"
+        which git
+        git --version
         which node
         node --version
         which npm
