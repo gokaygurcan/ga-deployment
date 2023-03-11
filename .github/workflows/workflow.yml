@@ -195,7 +195,7 @@ jobs:
         TAG=$(cat package.json | jq .version)
 
         git add .
-        git commit -S -m "tag: $TAG"
+        git commit -m "tag: $TAG"
         git push origin main
         
         git tag -a $TAG -m "$TAG"
