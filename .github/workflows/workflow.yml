@@ -189,7 +189,14 @@ jobs:
       run: |
         node node_modules/.bin/bump patch --commit "release v" --tag "v"
         
-    - id: check
-      name: Check
+    - id: push
+      name: Push
       run: |
-        cat package.json
+        TAG=$(cat package.json | jq .version)
+
+        git add .
+        git commit -S -m "tag: $TAG"
+        git push origin main
+        
+        git tag -a $TAG -m "$TAG"
+        git push origin $TAG
